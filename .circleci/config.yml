@@ -158,6 +158,10 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
+      - run:
+          name: simulate error
+          command: |
+            return 1   # simulate an error, cause the job to fail
       - destroy_environment
         when: on_fail
 
