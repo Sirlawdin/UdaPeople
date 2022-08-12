@@ -39,164 +39,175 @@ commands:
                 fi
 
 jobs:
-  build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: Build front-end
-          command: |
-            # Your code here
-            cd frontend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
-
-  build-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: Build back-end
-          command: |
-            # Your code here
-            cd backend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-  
-  test-frontend:
-    docker:
-      # Docker image here
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout    
-      - restore_cache:
-          keys: [frontend-build]
-      - run:
-          name: test front-end
-          command: |
-            cd frontend
-            npm install
-            npm run test
-
-  test-backend:
-    docker:
-      # Docker image here
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout    
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: test back-end
-          command: |
-            cd backend
-            npm install
-            npm run test
-      
-            
-  scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-      # Docker image here
-    steps:
-      # Checkout code from git
-      - checkout
-      # Restore from cache
-      - restore_cache:
-          keys: [frontend-build]
-      # Your job code here
-      - run:
-          name: scan backend
-          command: |
-            cd frontend
-            npm install
-            npm audit fix --audit-level=critical --force
-
-  scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
-      # Docker image here
-    steps:
-      # Checkout code from git
-      - checkout
-      # Restore from cache
-      - restore_cache:
-          keys: [backend-build]
-      # Your job code here
-      - run:
-          name: scan backend
-          command: |
-            cd frontend
-            npm install
-            npm audit fix --audit-level=critical --force
-
-  deploy-infrastructure:
-    docker:
-      # Docker image here that supports AWS CLI
-      -  image: amazon/aws-cli
-    steps:
-      # Checkout code from git
-      - checkout
-      - run:
-          name: Ensure back-end infrastructure exists
-          command: |
-            yum -y install -y tar gzip  
-            aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople 
-            
-      - run:
-          name: Ensure front-end infrastructure exist
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople 
-        
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text >> inventory
-
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
-      - destroy-environment
-          # when: on_fail
-      # Here's where you will add some code to rollback on failure
- 
-
-  # configure-infrastructure:
+  # build-frontend:
   #   docker:
-  #     - image: python:alpine3.16
+  #     - image: circleci/node:13.8.0
   #   steps:
   #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: 
-  #           - "5e:9f:b8:0e:28:52:b5:28:cc:aa:25:51:de:f1:70:ac"
-  #     - attach_workspace:
-  #         at: ~/
-
   #     - run:
-  #         name: Install dependencies
+  #         name: Build front-end
   #         command: |
-  #           apk add --update ansible openssh-client
-  #           apk add --update tar gzip ansible nodejs npm curl
-  #           pip install awscli
+  #           # Your code here
+  #           cd frontend
+  #           npm install
+  #           npm run build
+  #     - save_cache:
+  #         paths: [frontend/node_modules]
+  #         key: frontend-build
+
+  # build-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Build back-end
+  #         command: |
+  #           # Your code here
+  #           cd backend
+  #           npm install
+  #           npm run build
+  #     - save_cache:
+  #         paths: [backend/node_modules]
+  #         key: backend-build
+  
+  # test-frontend:
+  #   docker:
+  #     # Docker image here
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout    
+  #     - restore_cache:
+  #         keys: [frontend-build]
+  #     - run:
+  #         name: test front-end
+  #         command: |
+  #           cd frontend
+  #           npm install
+  #           npm run test
+
+  # test-backend:
+  #   docker:
+  #     # Docker image here
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout    
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     - run:
+  #         name: test back-end
+  #         command: |
+  #           cd backend
+  #           npm install
+  #           npm run test
+      
+            
+  # scan-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #     # Docker image here
+  #   steps:
+  #     # Checkout code from git
+  #     - checkout
+  #     # Restore from cache
+  #     - restore_cache:
+  #         keys: [frontend-build]
+  #     # Your job code here
+  #     - run:
+  #         name: scan backend
+  #         command: |
+  #           cd frontend
+  #           npm install
+  #           npm audit fix --audit-level=critical --force
+
+  # scan-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #     # Docker image here
+  #   steps:
+  #     # Checkout code from git
+  #     - checkout
+  #     # Restore from cache
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     # Your job code here
+  #     - run:
+  #         name: scan backend
+  #         command: |
+  #           cd frontend
+  #           npm install
+  #           npm audit fix --audit-level=critical --force
+
+  # deploy-infrastructure:
+  #   docker:
+  #     # Docker image here that supports AWS CLI
+  #     -  image: amazon/aws-cli
+  #   steps:
+  #     # Checkout code from git
+  #     - checkout
+  #     - run:
+  #         name: Ensure back-end infrastructure exists
+  #         command: |
+  #           yum -y install -y tar gzip 
+  #           aws cloudformation deploy \
+  #             --template-file .circleci/files/backend.yml \
+  #             --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --tags project=udapeople 
+            
+  #     - run:
+  #         name: Ensure front-end infrastructure exist
+  #         command: |
+  #           aws cloudformation deploy \
+  #             --template-file .circleci/files/frontend.yml \
+  #             --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --parameter-overrides ID="udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --tags project=udapeople 
+        
+  #     - run:
+  #         name: Add back-end ip to ansible inventory
+  #         command: |
+  #           aws ec2 describe-instances \
+  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
+  #             --output text >> inventory
+
+  #     - persist_to_workspace:
+  #         root: ~/
+  #         paths:
+  #           - project/.circleci/ansible/inventory.txt
+  #     - destroy-environment
+  #         # when: on_fail
+  #     # Here's where you will add some code to rollback on failure
+ 
+
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["3d:6f:ed:aa:fb:e6:7e:63:b9:d9:47:99:e3:79:70:5d"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+           pip install --upgrade pip
+           pip install awscli
+           apk add ansible
+      - run:
+          name: Cat inventory
+          command: |
+            cd .circleci/ansible/
+            cat inventory.txt
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible/
+            ansible-playbook configure-server.yml -i inventory.txt
+      - destroy-environment
+
 
   #     - run:
   #         name: Configure server using Ansible
@@ -362,16 +373,16 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+      # - build-frontend
+      # - build-backend
+      # - test-frontend:
+      #     requires: [build-frontend]
+      # - test-backend:
+      #     requires: [build-backend]
+      # - scan-backend:
+      #     requires: [build-backend]
+      # - scan-frontend:
+      #     requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       # - configure-infrastructure:
@@ -384,3 +395,40 @@ workflows:
       #     requires: [run_migrations]
       # - deploy_backend:
       #     requires: [run_migrations]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # configure-infrastructure:
+  #   docker:
+  #     - image: python:alpine3.16
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: 
+  #           - "3d:6f:ed:aa:fb:e6:7e:63:b9:d9:47:99:e3:79:70:5d"
+  #     - attach_workspace:
+  #         at: ~/
+
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           apk add --update ansible openssh-client
+  #           apk add --update tar gzip ansible nodejs npm curl
+  #           pip install awscli
