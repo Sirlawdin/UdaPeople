@@ -363,7 +363,7 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API URL: ${API_URL}"
             echo "Wait for backend to become available..."
-            sleep 60s
+            sleep 180s
             echo "Attempting to reach backend..."
             if curl "${API_URL}/api/status" | grep "ok"
             then
@@ -391,33 +391,33 @@ jobs:
       - revert-migrations
 
 
-  # cloudfront_update:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           yum -y install tar gzip
-  #     - run:
-  #         name: Save Old Workflow ID to kvdb.io
-  #         command: |
-  #           export OLD_WORKFLOW_ID=$(aws cloudformation \
-  #                     list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-  #                     --no-paginate --output text)
-  #           echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
-  #           curl https://kvdb.io/Jk2tF2XXDwn1JJeVFeFsBZ/old_workflow_id -d "${OLD_WORKFLOW_ID}"
-  #     - run:
-  #         name: Update cloudfront distribution
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file .circleci/files/cloudfront.yml \
-  #             --stack-name cloudfront-stack-${CIRCLE_WORKFLOW_ID:0:7} \
-  #             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-  #             --tags project=udapeople
-  #     - destroy-environment
-  #     - revert-migrations
+  cloudfront_update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip
+      - run:
+          name: Save Old Workflow ID to kvdb.io
+          command: |
+            export OLD_WORKFLOW_ID=$(aws cloudformation \
+                      list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                      --no-paginate --output text)
+            echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
+            curl https://kvdb.io/Jk2tF2XXDwn1JJeVFeFsBZ/old_workflow_id -d "${OLD_WORKFLOW_ID}"
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name cloudfront-stack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - destroy-environment
+      - revert-migrations
 
 
 
@@ -447,40 +447,6 @@ workflows:
           requires: [run_migrations]
       - smoke-test:
           requires: [deploy_backend, deploy_frontend]
+      - cloudfront_update:
+          requires: [smoke-test]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # configure-infrastructure:
-  #   docker:
-  #     - image: python:alpine3.16
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: 
-  #           - "3d:6f:ed:aa:fb:e6:7e:63:b9:d9:47:99:e3:79:70:5d"
-  #     - attach_workspace:
-  #         at: ~/
-
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           apk add --update ansible openssh-client
-  #           apk add --update tar gzip ansible nodejs npm curl
-  #           pip install awscli
