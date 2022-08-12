@@ -301,55 +301,46 @@ jobs:
       - revert-migrations
       - destroy-environment
 
-  # deploy_backend:
-  #   docker:
-  #     - image: python:alpine3.16
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: 
-  #           - "5e:9f:b8:0e:28:52:b5:28:cc:aa:25:51:de:f1:70:ac"
-  #     - attach_workspace:
-  #         at: ~/
+  deploy_backend:
+    docker:
+      - image: python:alpine3.16
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: 
+            - "3d:6f:ed:aa:fb:e6:7e:63:b9:d9:47:99:e3:79:70:5d"
+      - attach_workspace:
+          at: ~/
 
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           apk add --update ansible openssh-client tar gzip curl nodejs npm
-  #           pip install awscli
-  #     - run:
-  #         name: Deploy backend
-  #         no_output_timeout: 30m
-  #         command: |
-  #           echo ENVIRONMENT=production >> "backend/.env"
-  #           echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-  #           echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-  #           echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-  #           echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-  #           echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-  #           echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-  #           echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-  #           echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-  #           echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-  #           cat backend/.env
+      - run:
+          name: Install dependencies
+          command: |
+            pip install --upgrade pip
+            pip install awscli
+            apk add --update nodejs npm ansible zip
+      - run:
+          name: Deploy backend
+          no_output_timeout: 30m
+          command: |
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat backend/.env
             
-  #           tar -C backend -czvf artifact.tar.gz .
-  #           ls -la
-  #           cd .circleci/ansible
-  #           cat inventory.txt
-  #           export ANSIBLE_HOST_KEY_CHECKING=False
-  #           ansible-playbook -i inventory.txt deploy-backend.yml
-  #           cd backend
-  #           npm install --legacy-peer-deps
-  #           npm run build
-  #           cd ..
-  #           tar -C backend -czvf artifact.tar.gz .
-  #           cd .circleci/ansible
-  #           cat inventory.txt
-  #           export ANSIBLE_HOST_KEY_CHECKING=False
-  #           ansible-playbook -i inventory.txt deploy-backend.yml
-      
-  #     - destroy-environment
+            tar -C backend -czvf artifact.tar.gz .
+            ls -la
+            cd .circleci/ansible
+            cat inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment
 
      
 
@@ -375,12 +366,12 @@ workflows:
           requires: [deploy-infrastructure]
       - run_migrations:
           requires: [configure-infrastructure]
-      # - deploy_backend:
-      #     requires: [run_migrations]
+      - deploy_backend:
+          requires: [run_migrations]
       - deploy_frontend:
           requires: [run_migrations]
-      # - deploy_backend:
-      #     requires: [run_migrations]
+      # - smoke-test:
+      #     requires: [deploy_backend, deploy_frontend]
 
 
 
