@@ -249,6 +249,7 @@ jobs:
             npm run migrations > migrations_dump.txt
             cat migrations_dump.txt
       
+      
       - run:
           name: Send migration status to kvdb.io OR memstash.io #using kvdb.io
           working_directory: ./backend
