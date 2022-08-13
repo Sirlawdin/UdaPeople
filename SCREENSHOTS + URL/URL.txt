@@ -1,0 +1,3 @@
+https://github.com/Sirlawdin/UdaPeople.git
+
+https://udapeople-b01cce4.s3.amazonaws.com/
