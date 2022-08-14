@@ -1,3 +1,4 @@
 https://github.com/Sirlawdin/UdaPeople.git
 
-https://udapeople-b01cce4.s3.amazonaws.com/
+https://udapeople-e7f9009.s3.amazonaws.com/
+
