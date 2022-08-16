@@ -420,7 +420,7 @@ jobs:
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - destroy-environment
-      - revert-migration
+      - revert-migrations
 
   # -${CIRCLE_WORKFLOW_ID:0:7}
 
