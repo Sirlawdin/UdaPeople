@@ -417,7 +417,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
-              --stack-name InitialStack-${CIRCLE_WORKFLOW_ID:0:7} \    
+              --stack-name InitialStack \    
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - destroy-environment
@@ -448,7 +448,6 @@ jobs:
             then
               echo "start clean up"
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             else 
               echo "Cannot cleanup"
